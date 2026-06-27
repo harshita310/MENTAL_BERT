@@ -2,26 +2,21 @@
 __pycache__/
 *.pyc
 
-# Virtual Environment
+# Virtual environment
 venv/
-.venv/
+.env
 
-# VS Code
-.vscode/
+# Dataset
+data/raw/
+data/processed/
 
-# Jupyter
-.ipynb_checkpoints/
-
-# Models
+# Trained models
 models/
 
-# Training checkpoints
+# Hugging Face checkpoints
+bert_results/
 checkpoints/
 
-# Datasets
-data/raw/
-
-
 # OS files
-Thumbs.db
 .DS_Store
+Thumbs.db

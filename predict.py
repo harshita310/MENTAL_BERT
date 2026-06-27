@@ -1,65 +1,133 @@
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
-
-# Load saved model
-model_path = "./models/saved_bert_classifier"
-
-tokenizer = AutoTokenizer.from_pretrained(model_path)
-model = AutoModelForSequenceClassification.from_pretrained(model_path)
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 
+############################################################
+# Configuration
+############################################################
 
-# ── Device setup — FIX: move model to GPU before inference ─────────────────────
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
-print(f"Running inference on: {device}")
-# ───────────────────────────────────────────────────────────────────────────────
+MODEL_PATH = "models/saved_mentalbert_classifier"
+
+MAX_LENGTH = 128
 
 
-# Label mapping
-id2label = {
-    0: "anxiety",
-    1: "depression",
-    2: "normal",
-    3: "suicidal"
-}
+############################################################
+# Device
+############################################################
 
-# User input
-text = input("Enter text: ")
-
-# Tokenize
-inputs = tokenizer(
-    text,
-    return_tensors="pt",
-    truncation=True,
-    padding=True,
-    max_length=128
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
 )
 
-# Move input to same device as model
-inputs = {k: v.to(device) for k, v in inputs.items()}
+print("=" * 60)
+print("MentalBERT Mental Health Classifier")
+print("=" * 60)
+print(f"Running on: {device}")
+print()
 
-# Prediction
+
+############################################################
+# Load Model
+############################################################
+
+print("Loading model...")
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    MODEL_PATH
+)
+
+model.to(device)
 model.eval()
 
-with torch.no_grad():
-    outputs = model(**inputs)
-
-    probs = torch.softmax(outputs.logits, dim=1)
-
-    predicted_id = torch.argmax(probs, dim=1).item()
-
-    confidence = probs[0][predicted_id].item() * 100
-
-# Output
-print("\nPrediction Results")
-print("------------------")
-print("Predicted Class ID :", predicted_id)
-print("Predicted Label    :", id2label[predicted_id])
-print("Confidence         :", round(confidence, 2), "%")
+print("Model loaded successfully.\n")
 
 
-# Show all class probabilities
-print("\nAll Class Probabilities:")
-for idx, prob in enumerate(probs[0]):
-    print(f"  {id2label[idx]:<12} : {round(prob.item() * 100, 2)} %")
+############################################################
+# Label Mapping
+############################################################
+
+id2label = {
+    int(k): v
+    for k, v in model.config.id2label.items()
+}
+
+
+############################################################
+# Prediction Function
+############################################################
+
+def predict(text):
+
+    inputs = tokenizer(
+        text,
+        return_tensors="pt",
+        truncation=True,
+        padding=True,
+        max_length=MAX_LENGTH
+    )
+
+    inputs = {
+        key: value.to(device)
+        for key, value in inputs.items()
+    }
+
+    with torch.no_grad():
+
+        outputs = model(**inputs)
+
+        probabilities = torch.softmax(
+            outputs.logits,
+            dim=1
+        )[0]
+
+    predicted_id = torch.argmax(probabilities).item()
+
+    confidence = probabilities[predicted_id].item() * 100
+
+    return predicted_id, confidence, probabilities.cpu().numpy()
+
+
+############################################################
+# Interactive Prediction
+############################################################
+
+print("Type 'exit' to quit.\n")
+
+while True:
+
+    text = input("Enter text: ").strip()
+
+    if text.lower() == "exit":
+        print("\nExiting...")
+        break
+
+    if text == "":
+        print("Please enter some text.\n")
+        continue
+
+    predicted_id, confidence, probabilities = predict(text)
+
+    print("\n" + "=" * 60)
+    print("Prediction Result")
+    print("=" * 60)
+
+    print(f"Input      : {text}")
+    print(f"Prediction : {id2label[predicted_id]}")
+    print(f"Confidence : {confidence:.2f}%")
+
+    print("\nClass Probabilities")
+    print("-" * 60)
+
+    sorted_probs = sorted(
+        enumerate(probabilities),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    for idx, prob in sorted_probs:
+        print(f"{id2label[idx]:<12} : {prob*100:.2f}%")
+
+    print("=" * 60)
+    print()

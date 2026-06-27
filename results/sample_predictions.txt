@@ -1,0 +1,24 @@
+======================================================================
+MentalBERT Sample Predictions
+======================================================================
+
+Sample 1
+Input      : I feel nervous all the time and I cannot stop overthinking.
+Prediction : anxiety
+Confidence : 95.92%
+----------------------------------------------------------------------
+Sample 2
+Input      : I feel empty and sad every day.
+Prediction : depression
+Confidence : 92.72%
+----------------------------------------------------------------------
+Sample 3
+Input      : I want to end everything and disappear forever.
+Prediction : suicidal
+Confidence : 90.30%
+----------------------------------------------------------------------
+Sample 4
+Input      : I had a normal day and went out with my friends.
+Prediction : normal
+Confidence : 99.98%
+----------------------------------------------------------------------

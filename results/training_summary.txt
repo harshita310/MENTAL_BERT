@@ -1,0 +1,44 @@
+
+===============================
+MentalBERT Fine-Tuning Summary
+===============================
+
+Model
+-----
+mental/mental-bert-base-uncased
+
+Training Samples
+----------------
+49612
+
+Testing Samples
+---------------
+992
+
+Epochs
+------
+2
+
+Learning Rate
+-------------
+2e-05
+
+Batch Size
+----------
+4
+
+Maximum Sequence Length
+-----------------------
+128
+
+Evaluation Metrics
+------------------
+
+Accuracy     : 0.8841
+
+Macro F1     : 0.8835
+
+Weighted F1  : 0.8835
+
+Loss         : 0.5068
+
